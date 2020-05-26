@@ -17,7 +17,7 @@
       :extraHeight="300"
     >
       <template v-slot:name>
-        <a-button type="primary" @click="addBatch">新增用户</a-button>
+        <a-button style="margin-left: 2px" type="primary" @click="addBatch">新增用户</a-button>
       </template>
       <span slot="admin" slot-scope="text">
         <a-tag :color="!!text ? '#87d068' : '#f50'">{{ !!text ? '管理员' : '普通用户' }}</a-tag>

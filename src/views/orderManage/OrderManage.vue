@@ -26,11 +26,11 @@
         searchParam: ['box', 'name', 'phone', 'address', 'idCard', 'postNum'],
         localName: '订单'
       }"
-      :extraHeight="300"
+      :extraHeight="400"
     >
       <template v-slot:name>
-        <a-button type="primary" v-show="showAddOrder" @click="showAddBatch = true">新增订单</a-button>
-        <a-button type="primary" @click="clearance" v-show="admin" :loading="clearanceLoading">报关</a-button>
+        <a-button type="primary" style="margin-left: 2px" v-show="showAddOrder" @click="showAddBatch = true">新增订单</a-button>
+        <a-button type="primary" style="margin-left: 2px" @click="clearance" v-show="admin" :loading="clearanceLoading">报关</a-button>
       </template>
       <span slot="createTime" slot-scope="text">
         {{ text | moment }}
@@ -231,7 +231,15 @@ export default {
       this.clearanceLoading = true
       fetch(urls.order.clearance, { logisticsId: this.selectBatch }).then(res => {
         if (res.data.errorCode === 0) {
-          this.$message.success('报关打印成功')
+          const data = res.data.responseBody || []
+          const errorData = data.filter(item => item.postNum !== '')
+          if (errorData && errorData.length > 0) {
+            errorData.forEach(item => {
+              this.$message.error(`订单编号${item.uuid}未报关成功`)
+            })
+          } else {
+            this.$message.success('报关打印成功')
+          }
         } else {
           this.$message.error(res.data.message)
         }

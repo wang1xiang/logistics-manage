@@ -16,7 +16,7 @@
       :extraHeight="300"
     >
       <template v-slot:name>
-        <a-button type="primary" @click="addBatch">新增批次</a-button>
+        <a-button type="primary" style="margin-left: 2px" @click="addBatch">新增批次</a-button>
       </template>
       <span slot="status" slot-scope="text">
         <a-tag :color="!!text ? '#f50' : '#87d068'">{{ !!text ? '已停用' : '正在使用' }}</a-tag>

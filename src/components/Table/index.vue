@@ -63,8 +63,10 @@ export default {
   computed: {
     localColumns () {
       return this.columns.map(item => {
-        item.ellipsis = true
         item.align = 'center'
+        if (!item.scopedSlots) {
+          item.ellipsis = true
+        }
         return item
       })
     },
@@ -107,7 +109,7 @@ export default {
             v-model={this.searchValue}
             enterButton
           />
-          {this.$slots.name} // 表格各种操作按钮
+          {this.$slots.name}
         </div>
       )
     },
@@ -170,6 +172,7 @@ export default {
               typeof this[k].onChange !== 'undefined' && this[k].onChange(selectedRowKeys, selectedRows)
             }
           }
+          console.log(props[k])
           return props[k]
         } else if (!this.rowSelection) {
           // 如果没打算开启 rowSelection 则清空默认的选择项
@@ -217,8 +220,5 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 15px;
-}
-.header-button > button {
-  margin-left: 2px;
 }
 </style>
