@@ -168,10 +168,10 @@ export default {
     initData () {
       if (this.paramData) {
         const { form: { setFieldsValue } } = this.$refs.repository
-        const { address, box, createTime, idCard, name, phone, postNum, uuid, weight } = this.paramData
+        const { address, box, createTime, idCard, name, phone, postNum, uuid, weight, length, width, height } = this.paramData
         this.$nextTick(() => {
           setFieldsValue({
-            address, box, createTime, idCard, name, phone, postNum, uuid, weight
+            address, box, createTime, idCard, name, phone, postNum, uuid, weight, length, width, height
           })
         })
       }

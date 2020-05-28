@@ -20,7 +20,6 @@
       :loading="tableLoading"
       :pagination="true"
       :scroll="{x: 'auto'}"
-      :customRow="customClick"
       :search="{
         showHeader: true,
         searchParam: ['box', 'name', 'phone', 'address', 'idCard', 'postNum'],
@@ -31,6 +30,10 @@
       <template v-slot:name>
         <a-button type="primary" style="margin-left: 2px" v-show="showAddOrder" @click="showAddBatch = true">新增订单</a-button>
         <a-button type="primary" style="margin-left: 2px" @click="clearance" v-show="admin" :loading="clearanceLoading">报关</a-button>
+        <a-button type="primary" style="margin-left: 2px" @click="showUpload = true" v-show="admin">批量导入</a-button>
+      </template>
+      <template slot="uuid" slot-scope="text, record">
+        <span @click="handleEdit(record)" style="cursor: pointer">{{ text }}</span>
       </template>
       <span slot="createTime" slot-scope="text">
         {{ text | moment }}
@@ -56,6 +59,55 @@
       :footer="null"
       @cancel="showAddBatch = false">
       <repository-form @addSuccess="showAddBatch = false" ref="repository" :selectBatch="selectBatch" />
+    </a-modal>
+    <a-modal
+      title="报关信息"
+      :width="850"
+      :visible="showErrorData"
+      destroyOnClose
+      :footer="null"
+      @cancel="showErrorData = false">
+      <a-table
+        :columns="errorColumns"
+        :dataSource="errorData"
+        :pagination="false"
+        :scroll="{y: 500}"
+      >
+      </a-table>
+    </a-modal>
+    <a-modal
+      title="批量导入"
+      :visible="showUpload"
+      destroyOnClose
+      :maskStyle="{ backgroundColor: 'rgba(0,0,0,0.2)' }"
+      @cancel="showUpload = false; fileList = []"
+    >
+      <template slot="footer">
+        <a-button @click="showUpload = false; fileList = []">关闭</a-button>
+      </template>
+      <a-tabs defaultActiveKey="1">
+        <a-tab-pane tab="模板下载" key="1">
+          <a-button icon="download" @click="getTemplate" type="primary">下载模板</a-button>
+        </a-tab-pane>
+        <a-tab-pane tab="文件上传" key="2">
+          <a-upload
+            name="file"
+            :action="url"
+            :data="{
+              logisticsId: selectBatch || '',
+              file: fileList
+            }"
+            :headers="headers"
+            :fileList="fileList"
+            @change="changeFile"
+            v-if="showUpload"
+          >
+            <a-button>
+              <a-icon type="upload" />上传文件
+            </a-button>
+          </a-upload>
+        </a-tab-pane>
+      </a-tabs>
     </a-modal>
   </a-card>
 </template>
@@ -83,7 +135,8 @@ export default {
           title: '订单流水号',
           dataIndex: 'uuid',
           width: 280,
-          fixed: 'left'
+          fixed: 'left',
+          scopedSlots: { customRender: 'uuid' }
         },
         {
           title: '箱号',
@@ -117,10 +170,34 @@ export default {
           width: 200
         },
         {
+          title: '长',
+          dataIndex: 'length',
+          width: 120,
+          sorter: (a, b) => a.length - b.length
+        },
+        {
+          title: '宽',
+          dataIndex: 'width',
+          width: 120,
+          sorter: (a, b) => a.width - b.width
+        },
+        {
+          title: '高',
+          dataIndex: 'height',
+          width: 120,
+          sorter: (a, b) => a.height - b.height
+        },
+        {
           title: '毛重',
           dataIndex: 'weight',
           width: 120,
           sorter: (a, b) => a.weight - b.weight
+        },
+        {
+          title: '体积重',
+          dataIndex: 'bulky',
+          width: 120,
+          sorter: (a, b) => a.bulky - b.bulky
         },
         {
           title: '创建时间',
@@ -137,6 +214,50 @@ export default {
           scopedSlots: { customRender: 'action' }
         }
       ],
+      errorColumns: [
+        {
+          title: '订单流水号',
+          dataIndex: 'uuid',
+          align: 'center',
+          ellipsis: true,
+          width: 280
+        },
+        {
+          title: '箱号',
+          dataIndex: 'box',
+          width: 120,
+          align: 'center',
+          ellipsis: true,
+          sorter: (a, b) => a.box - b.box
+        },
+        {
+          title: '收件人',
+          dataIndex: 'name',
+          align: 'center',
+          ellipsis: true,
+          width: 120
+        },
+        {
+          title: '邮件单号',
+          dataIndex: 'postNum',
+          align: 'center',
+          ellipsis: true,
+          width: 120
+        },
+        {
+          title: '报关状态',
+          dataIndex: 'postState',
+          width: 100,
+          align: 'center',
+          customRender: text => {
+            if (text !== '') {
+              return <span style="color: green">成功</span>
+            } else {
+              return <span style="color: red">失败</span>
+            }
+          }
+        }
+      ],
       showAddOrder: true,
       selectBatch: '',
       // 加载数据方法 必须为 Promise 对象
@@ -144,14 +265,16 @@ export default {
       showAddBatch: false,
       confirmLoading: false,
       clearanceLoading: false,
-      customClick: record => ({
-        on: {
-          click: e => {
-            e.preventDefault()
-            this.handleEdit(record)
-          }
-        }
-      })
+      showUpload: false,
+      url: urls.order.upload,
+      headers: {
+        authorization: 'authorization-text',
+        token: localStorage.getItem('LOGISTIC_TOKEN')
+      },
+      fileList: [],
+
+      showErrorData: false,
+      errorData: []
     }
   },
   computed: {
@@ -232,13 +355,14 @@ export default {
       fetch(urls.order.clearance, { logisticsId: this.selectBatch }).then(res => {
         if (res.data.errorCode === 0) {
           const data = res.data.responseBody || []
-          const errorData = data.filter(item => item.postNum !== '')
-          if (errorData && errorData.length > 0) {
-            errorData.forEach(item => {
-              this.$message.error(`订单编号${item.uuid}未报关成功`)
-            })
+          if (data.length === 0) {
+            this.$message.info('没有可报关订单')
           } else {
-            this.$message.success('报关打印成功')
+            this.showErrorData = true
+            this.errorData = data.map(item => {
+              item.postState = item.postNum
+              return item
+            })
           }
         } else {
           this.$message.error(res.data.message)
@@ -246,6 +370,35 @@ export default {
       }).finally(() => {
         this.clearanceLoading = false
       })
+    },
+
+    // 下载上传模板
+    getTemplate () {
+      const url = urls.order.downloadTemplate + '?token=' + this.headers.token
+      window.location.href = url
+    },
+    // 文件上传
+    changeFile ({ fileList }) {
+      this.fileList = fileList
+      const data = this.fileList[this.fileList.length - 1]
+      if (data.status === 'error') {
+        this.$message.error('文件上传失败')
+        return
+      }
+      if (this.fileList.length > 0 && data.status === 'done') {
+        const { response: { errorCode, responseBody } } = data
+        if (errorCode === 0 && responseBody.length === 0) {
+          this.$message.success('文件上传成功')
+          this.tableLoading = true
+          this.getOrder(this.selectBatch).then(res => {
+            this.tableLoading = false
+          })
+        } else {
+          responseBody.forEach(item => {
+            this.$message.error(`第${item.line}行${item.message}`)
+          })
+        }
+      }
     }
   }
 }

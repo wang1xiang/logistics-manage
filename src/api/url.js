@@ -31,6 +31,8 @@ const logistics = {
     delete: '/order/delete',
     get: '/order/get',
     clearance: '/order/clearance',
+    downloadTemplate: '/order/downloadTemplate',
+    upload: '/order/upload',
 
     // 商品
     getCommodityByOrderId: '/order/getCommodityByOrderId',

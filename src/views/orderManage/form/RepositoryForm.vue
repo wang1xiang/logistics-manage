@@ -72,10 +72,15 @@
           </a-form-item>
         </a-col>
         <a-col :lg="6" :md="6" :sm="24">
-          <a-form-item label="智能填写">
+          <a-form-item>
+            <span slot="label">
+              智能填写
+              <a-tooltip title="输入完成后按回车键生成数据">
+                <a-icon style="cursor: pointer" type="question-circle-o" />
+              </a-tooltip>
+            </span>
             <a-textarea
               rows="4"
-              @blur="smartFill"
               @pressEnter="smartFill"
               placeholder="粘贴地址信息，可自动识别并填写如：物小流，188********，广东省 广东市 xx区 xx街道 xxxxx"
               v-model="smartAddress">
@@ -94,6 +99,41 @@
               ]" />
           </a-form-item>
         </a-col>
+        <a-col :lg="6" :md="6" :sm="24">
+          <a-form-item label="长">
+            <a-input-number
+              style="width: 100%"
+              placeholder="请输入长"
+              :min="1"
+              v-decorator="[
+                'length'
+              ]" />
+          </a-form-item>
+        </a-col>
+        <a-col :lg="6" :md="6" :sm="24">
+          <a-form-item label="宽">
+            <a-input-number
+              style="width: 100%"
+              placeholder="请输入宽"
+              :min="1"
+              v-decorator="[
+                'width'
+              ]" />
+          </a-form-item>
+        </a-col>
+        <a-col :lg="6" :md="6" :sm="24">
+          <a-form-item label="高">
+            <a-input-number
+              style="width: 100%"
+              placeholder="请输入高"
+              :min="1"
+              v-decorator="[
+                'height'
+              ]" />
+          </a-form-item>
+        </a-col>
+      </a-row>
+      <a-row class="form-row" >
         <a-col :offset="22">
           <a-form-item>
             <a-button type="primary" htmlType="submit" >提交</a-button>
