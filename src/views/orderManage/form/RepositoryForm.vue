@@ -49,7 +49,7 @@
             v-show="$route.query.uuid"
             label="邮件单号">
             <a-input
-              readonly
+              disabled
               v-decorator="[
                 'postNum'
               ]" />
@@ -93,7 +93,6 @@
             <a-input-number
               style="width: 100%"
               placeholder="请输入毛重"
-              :min="1"
               v-decorator="[
                 'weight'
               ]" />
@@ -104,7 +103,6 @@
             <a-input-number
               style="width: 100%"
               placeholder="请输入长"
-              :min="1"
               v-decorator="[
                 'length'
               ]" />
@@ -115,7 +113,6 @@
             <a-input-number
               style="width: 100%"
               placeholder="请输入宽"
-              :min="1"
               v-decorator="[
                 'width'
               ]" />
@@ -126,7 +123,6 @@
             <a-input-number
               style="width: 100%"
               placeholder="请输入高"
-              :min="1"
               v-decorator="[
                 'height'
               ]" />
@@ -134,6 +130,16 @@
         </a-col>
       </a-row>
       <a-row class="form-row" >
+        <a-col :lg="6" :md="6" :sm="24">
+          <a-form-item label="体积重" v-show="$route.query.uuid">
+            <a-input-number
+              disabled
+              style="width: 100%"
+              v-decorator="[
+                'bulky'
+              ]" />
+          </a-form-item>
+        </a-col>
         <a-col :offset="22">
           <a-form-item>
             <a-button type="primary" htmlType="submit" >提交</a-button>

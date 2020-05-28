@@ -13,6 +13,7 @@
       </a-form>
     </div>
     <Table
+      style="margin-top: -56px;"
       bordered
       ref="table"
       :columns="columns"
@@ -30,10 +31,10 @@
       <template v-slot:name>
         <a-button type="primary" style="margin-left: 2px" v-show="showAddOrder" @click="showAddBatch = true">新增订单</a-button>
         <a-button type="primary" style="margin-left: 2px" @click="clearance" v-show="admin" :loading="clearanceLoading">报关</a-button>
-        <a-button type="primary" style="margin-left: 2px" @click="showUpload = true" v-show="admin">批量导入</a-button>
+        <a-button type="primary" style="margin-left: 2px" @click="showUpload = true">批量导入</a-button>
       </template>
       <template slot="uuid" slot-scope="text, record">
-        <span @click="handleEdit(record)" style="cursor: pointer">{{ text }}</span>
+        <a @click="handleEdit(record)" style="cursor: pointer">{{ text }}</a>
       </template>
       <span slot="createTime" slot-scope="text">
         {{ text | moment }}
